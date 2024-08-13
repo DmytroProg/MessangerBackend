@@ -43,4 +43,10 @@ public class UserService : IUserService
     {
         throw new NotImplementedException();
     }
+    
+    // якщо нікнейм коректний 
+    // якщо нікнейм пустий 
+    // якщо немає такого нікнейму
+    // якщо нікнейм є частиною чиєгось нікнейму (User { Nickname = "TestDevUser" }, nickname = "Dev")
+    // різні регістри (User { Nickname = "User" }, nickname = "user")
 }

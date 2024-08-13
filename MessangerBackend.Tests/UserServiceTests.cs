@@ -1,8 +1,7 @@
 ﻿using MessangerBackend.Core.Interfaces;
 using MessangerBackend.Core.Models;
 using MessangerBackend.Core.Services;
-using MessangerBackend.Storage;
-using Microsoft.EntityFrameworkCore;
+using MessangerBackend.Tests.Fakes;
 
 namespace MessangerBackend.Tests;
 
@@ -15,11 +14,12 @@ public class UserServiceTests
         var userService = CreateUserService();
         var expectedUser = new User()
         {
-            Nickname = "TestUser",
-            Password = "1111",
+            Nickname = CorrectNickname,
+            Password = CorrectPassword,
         };
 
-        var user = await userService.Login("TestUser", "1111");
+        await userService.Register(CorrectNickname, CorrectPassword);
+        var user = await userService.Login(CorrectNickname, CorrectPassword);
         
         Assert.Equal(expectedUser, user, new UserComparer());
     }
@@ -36,11 +36,11 @@ public class UserServiceTests
         // Act
         var exceptionNicknameHandler = async () =>
         {
-            await service.Login(data, "1234");
+            await service.Login(data, CorrectPassword);
         };
         var exceptionPasswordHandler = async () =>
         {
-            await service.Login("nick", data);
+            await service.Login(CorrectNickname, data);
         };
         
         // Assert
@@ -48,14 +48,61 @@ public class UserServiceTests
         await Assert.ThrowsAsync<ArgumentNullException>(exceptionPasswordHandler);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    [InlineData("1")]
+    [InlineData("@")]
+    public async Task UserService_Register_ThrowsExceptionWhenIncorrectNickname(string nickname)
+    {
+        var service = CreateUserService();
+        
+        var exceptionHandler = async () =>
+        {
+            await service.Register(nickname, CorrectPassword);
+        };
+
+        await Assert.ThrowsAsync<ArgumentException>(exceptionHandler);
+    }
+    
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    [InlineData("1")]
+    [InlineData("9999")]
+    [InlineData("ghsfghsegfsheg")]
+    public async Task UserService_Register_ThrowsExceptionWhenIncorrectPassword(string password)
+    {
+        var service = CreateUserService();
+        
+        var exceptionHandler = async () =>
+        {
+            await service.Register(CorrectNickname, password);
+        };
+
+        await Assert.ThrowsAsync<ArgumentException>(exceptionHandler);
+    }
+
+    private const string CorrectNickname = "TestUser";
+
+    private const string CorrectPassword = "rRT56TGV!_gTr";
+
     private IUserService CreateUserService()
     {
-        var options = new DbContextOptionsBuilder<MessangerContext>()
+        /*var options = new DbContextOptionsBuilder<MessangerContext>()
             .UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=MessangerDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False")
             .Options;
         var context = new MessangerContext(options);
-        var repository = new Repository(context);
-        return new UserService(repository);
+        var repository = new Repository(context);*/
+        return new UserService(new FakeUserRepository());
+    }
+
+    [Fact]
+    public async Task Test()
+    {
+       Assert.NotNull(null);
     }
 }
 
