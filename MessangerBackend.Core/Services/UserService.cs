@@ -1,5 +1,6 @@
 ﻿using MessangerBackend.Core.Interfaces;
 using MessangerBackend.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MessangerBackend.Core.Services;
 
@@ -14,7 +15,13 @@ public class UserService : IUserService
 
     public Task<User> Login(string nickname, string password)
     {
-        throw new NotImplementedException();
+        if (nickname == null || string.IsNullOrEmpty(nickname.Trim()) || 
+            password == null || string.IsNullOrEmpty(password.Trim()))
+        {
+            throw new ArgumentNullException();
+        }
+        return _repository.GetAll<User>()
+            .SingleAsync(x => x.Nickname == nickname && x.Password == password);
     }
 
     public Task<User> Register(string nickname, string password)
