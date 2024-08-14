@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using MessangerBackend.Core.Interfaces;
-using MessangerBackend.Core.Models;
 using MessangerBackend.DTOs;
 using MessangerBackend.Requests;
-using MessangerBackend.Storage;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MessangerBackend.Controllers;
 
@@ -13,25 +10,25 @@ namespace MessangerBackend.Controllers;
 [Route("api/users")]
 public class UserController : Controller
 {
-    private readonly IUserService _userService;
     private readonly IMapper _mapper;
+    private readonly IUserService _userService;
 
     public UserController(IMapper mapper, IUserService userService)
     {
         _mapper = mapper;
         _userService = userService;
     }
-    
+
     [HttpPost("register")]
     public async Task<ActionResult<UserDTO>> RegisterUser(CreateUserRequest request)
     {
         var userDb = await _userService.Register(request.Nickname, request.Password);
-        
+
         return Created("user", _mapper.Map<UserDTO>(userDb));
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers([FromQuery]int page, [FromQuery]int size)
+    public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers([FromQuery] int page, [FromQuery] int size)
     {
         var users = _userService.GetUsers(page, size);
         return Ok(_mapper.Map<IEnumerable<UserDTO>>(users));

@@ -24,9 +24,28 @@ public class UserService : IUserService
             .SingleAsync(x => x.Nickname == nickname && x.Password == password);
     }
 
-    public Task<User> Register(string nickname, string password)
+    public async Task<User> Register(string nickname, string password)
     {
-        throw new NotImplementedException();
+        var user = await _repository.Add(new User()
+        {
+            Nickname = nickname,
+            Password = password,
+            CreatedAt = DateTime.UtcNow,
+            LastSeenOnline = DateTime.UtcNow,
+        });
+        return user;
+    }
+
+    public async Task AddStats(string nickname)
+    {
+        var stats = _repository.GetAll<Stats>().FirstOrDefault(x => x.Name == nickname);
+        if (stats == null)
+            await _repository.Add(new Stats() { Name = nickname, Count = 1 });
+        else
+        {
+            stats.Count++;
+            await _repository.Update(stats);
+        }
     }
 
     public Task<User> GetUserById(int id)
@@ -36,12 +55,12 @@ public class UserService : IUserService
 
     public IEnumerable<User> GetUsers(int page, int size)
     {
-        throw new NotImplementedException();
+        return _repository.GetAll<User>().Skip(page * size).Take(size);
     }
 
     public IEnumerable<User> SearchUsers(string nickname)
     {
-        throw new NotImplementedException();
+        return _repository.GetAll<User>().Where(x => x.Nickname.ToLower().Contains(nickname.ToLower()));
     }
     
     // якщо нікнейм коректний 

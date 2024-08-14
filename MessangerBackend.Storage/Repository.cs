@@ -19,9 +19,11 @@ public class Repository : IRepository
         return entityFromFb.Entity;
     }
 
-    public Task<T> Update<T>(T entity) where T : class
+    public async Task<T> Update<T>(T entity) where T : class
     {
-        throw new NotImplementedException();
+        var updated = _context.Update(entity);
+        await _context.SaveChangesAsync();
+        return updated.Entity;
     }
 
     public Task<T> Delete<T>(int id) where T : class
