@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MessangerBackend.Core.Interfaces;
 using MessangerBackend.Core.Models;
 using MessangerBackend.DTOs;
 using MessangerBackend.Requests;
@@ -12,31 +13,40 @@ namespace MessangerBackend.Controllers;
 [Route("api/users")]
 public class UserController : Controller
 {
-    private readonly MessangerContext _context;
+    private readonly IUserService _userService;
     private readonly IMapper _mapper;
 
-    public UserController(MessangerContext context, IMapper mapper)
+    public UserController(IMapper mapper, IUserService userService)
     {
-        _context = context;
         _mapper = mapper;
+        _userService = userService;
     }
     
-    [HttpPost]
-    public async Task<ActionResult<UserDTO>> AddUser(CreateUserRequest request)
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDTO>> RegisterUser(CreateUserRequest request)
     {
-        var userDb = _mapper.Map<User>(request);
-        userDb.CreatedAt = userDb.LastSeenOnline = DateTime.UtcNow;
-        
-        _context.Users.Add(userDb);
-        await _context.SaveChangesAsync();
+        var userDb = await _userService.Register(request.Nickname, request.Password);
         
         return Created("user", _mapper.Map<UserDTO>(userDb));
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers([FromQuery]int page, [FromQuery]int size)
     {
-        var users = await _context.Users.ToListAsync();
+        var users = _userService.GetUsers(page, size);
+        return Ok(_mapper.Map<IEnumerable<UserDTO>>(users));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<UserDTO>> GetUserById(int id)
+    {
+        return Ok(_mapper.Map<UserDTO>(await _userService.GetUserById(id)));
+    }
+
+    [HttpGet("search/{name}")]
+    public ActionResult<IEnumerable<UserDTO>> SearchUsers(string name)
+    {
+        var users = _userService.SearchUsers(name);
         return Ok(_mapper.Map<IEnumerable<UserDTO>>(users));
     }
 }

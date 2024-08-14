@@ -1,3 +1,5 @@
+using MessangerBackend;
+using MessangerBackend.Middlewares;
 using MessangerBackend.Storage;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +23,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+/*app.Use(async (ctx, next) =>
+{
+    ctx.Abort();
+    await next.Invoke(ctx);
+});*/
+
+app.UseInfo();
 
 app.UseHttpsRedirection();
 
