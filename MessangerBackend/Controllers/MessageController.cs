@@ -1,11 +1,13 @@
 ﻿using MessangerBackend.Core.Models;
 using MessangerBackend.DTOs;
 using MessangerBackend.Storage;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MessangerBackend.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("message")]
 public class MessageController : Controller
 {

@@ -1,5 +1,10 @@
 ﻿namespace MessangerBackend.Core.Models;
 
+/*
+ *
+ * [Name] varchar(20) not null
+ */
+
 public class User
 {
     public int Id { get; set; }
@@ -9,3 +14,8 @@ public class User
     public DateTime LastSeenOnline { get; set; }
     public virtual ICollection<Chat> Chats { get; set; }
 }
+
+//[NotMapped] - не зберігає в таблицю
+//[Key] - primary key
+//[Column] - тип колонки
+//[MaxLength] - валідація довжини

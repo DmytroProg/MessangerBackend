@@ -1,30 +1,25 @@
 ﻿using AutoMapper;
 using MessangerBackend.Core.Interfaces;
 using MessangerBackend.DTOs;
-using MessangerBackend.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MessangerBackend.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/users")]
 public class UserController : Controller
 {
     private readonly IMapper _mapper;
     private readonly IUserService _userService;
+    private readonly IConfiguration _configuration;
 
-    public UserController(IMapper mapper, IUserService userService)
+    public UserController(IMapper mapper, IUserService userService, IConfiguration configuration)
     {
         _mapper = mapper;
         _userService = userService;
-    }
-
-    [HttpPost("register")]
-    public async Task<ActionResult<UserDTO>> RegisterUser(CreateUserRequest request)
-    {
-        var userDb = await _userService.Register(request.Nickname, request.Password);
-
-        return Created("user", _mapper.Map<UserDTO>(userDb));
+        _configuration = configuration;
     }
 
     [HttpGet]

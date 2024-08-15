@@ -1,4 +1,6 @@
-﻿using MessangerBackend.Core.Interfaces;
+﻿using System.Security.Cryptography;
+using System.Text;
+using MessangerBackend.Core.Interfaces;
 using MessangerBackend.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +23,7 @@ public class UserService : IUserService
             throw new ArgumentNullException();
         }
         return _repository.GetAll<User>()
-            .SingleAsync(x => x.Nickname == nickname && x.Password == password);
+            .SingleAsync(x => x.Nickname == nickname && x.Password == ComputeHash(password));
     }
 
     public async Task<User> Register(string nickname, string password)
@@ -29,7 +31,7 @@ public class UserService : IUserService
         var user = await _repository.Add(new User()
         {
             Nickname = nickname,
-            Password = password,
+            Password = ComputeHash(password),
             CreatedAt = DateTime.UtcNow,
             LastSeenOnline = DateTime.UtcNow,
         });
@@ -55,12 +57,23 @@ public class UserService : IUserService
 
     public IEnumerable<User> GetUsers(int page, int size)
     {
-        return _repository.GetAll<User>().Skip(page * size).Take(size);
+        return _repository.GetAll<User>().Skip((page - 1) * size).Take(size).ToList();
     }
 
     public IEnumerable<User> SearchUsers(string nickname)
     {
         return _repository.GetAll<User>().Where(x => x.Nickname.ToLower().Contains(nickname.ToLower()));
+    }
+
+    // move to class
+    private string ComputeHash(string data)
+    {
+        var sha = SHA256.Create();
+        var salt = "t5Y_@d:d";
+        
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(data + salt));
+
+        return Convert.ToBase64String(bytes);
     }
     
     // якщо нікнейм коректний 
