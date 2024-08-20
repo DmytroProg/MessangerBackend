@@ -1,6 +1,7 @@
 using System.Text;
 using MessangerBackend.Core.Interfaces;
 using MessangerBackend.Core.Services;
+using MessangerBackend.Filters;
 using MessangerBackend.Middlewares;
 using MessangerBackend.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MessangerContext>(options => options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=MessangerDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False"));
 builder.Services.AddTransient<IRepository, Repository>();
 builder.Services.AddTransient<IUserService, UserService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers(opt => opt.Filters.Add(new ExceptionHandlerFilter()));
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(5);
@@ -65,7 +66,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseInfo();
+//app.UseInfo();
 //app.UseMiddleware<StatsMiddleware>();
 
 app.Run();

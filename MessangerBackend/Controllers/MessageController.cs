@@ -3,6 +3,7 @@ using MessangerBackend.DTOs;
 using MessangerBackend.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MessangerBackend.Controllers;
 
@@ -49,5 +50,25 @@ public class MessageController : Controller
         _context.Add(message);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    [HttpGet("{chatId}")]
+    public async Task<ActionResult<IEnumerable<ShowMessageDTO>>> GetMessages(int chatId)
+    {
+        //var message = _context.Messages.Where(x => x.Chat.Id == chatId);
+        // select * from PrivateChat
+        // join Message
+        // join User
+        var chat = await _context.PrivateChats.Include(x => x.Messages)
+            .ThenInclude(x => x.Sender)
+            .FirstAsync(x => x.Id == chatId);
+        var messages = chat.Messages;
+
+        return Ok(messages.Select(x => new ShowMessageDTO()
+        {
+            Sender = x.Sender.Nickname,
+            SentAt = x.SentAt,
+            Text = x.Content
+        }));
     }
 }

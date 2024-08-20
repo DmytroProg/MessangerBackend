@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MessangerBackend.Core.Interfaces;
 using MessangerBackend.DTOs;
+using MessangerBackend.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,8 @@ public class UserController : Controller
     }
 
     [HttpGet]
+    [LoggingFilter]
+    //[AuthFilter]
     public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers([FromQuery] int page, [FromQuery] int size)
     {
         var users = _userService.GetUsers(page, size);
@@ -30,12 +33,14 @@ public class UserController : Controller
     }
 
     [HttpGet("{id}")]
+    [LoggingFilter]
     public async Task<ActionResult<UserDTO>> GetUserById(int id)
     {
         return Ok(_mapper.Map<UserDTO>(await _userService.GetUserById(id)));
     }
 
     [HttpGet("search/{name}")]
+    [LoggingFilter]
     public ActionResult<IEnumerable<UserDTO>> SearchUsers(string name)
     {
         var users = _userService.SearchUsers(name);
